@@ -1,6 +1,6 @@
-extern crate indicatif;
+// extern crate indicatif;
 
-use self::indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 
 use std::collections::HashMap;
 
@@ -57,6 +57,3 @@ impl Progress {
         self.multi_progress.join_and_clear().unwrap();
     }
 }
-
-
-
