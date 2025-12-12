@@ -7,7 +7,7 @@ use std::thread;
 mod network;
 mod progress;
 
-static ONE_KB: u64 = 1024;
+static KB_AS_B: u64 = 1024;
 
 pub struct Download {
     pub url: String,
@@ -96,7 +96,7 @@ impl Download {
 
     fn spawn_threads(self, content_length: u64) -> Vec<std::thread::JoinHandle<()>> {
         let mut children = vec![];
-        let max_buffer_size = ONE_KB * self.memory;
+        let max_buffer_size = KB_AS_B * self.memory;
         let (progress, ranges) = Download::calculate_ranges(
             self.threads,
             content_length,
