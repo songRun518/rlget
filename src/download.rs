@@ -37,7 +37,7 @@ impl Default for Download {
 
 impl Download {
     pub fn get(self) {
-        let content_length_resp: Option<u64> = self.network.get_content_length(&self.url);
+        let content_length_resp: Option<u64> = self.network.content_length(&self.url);
 
         match content_length_resp {
             Some(content_length) => {
@@ -118,7 +118,7 @@ impl Download {
                 let mut file_handle = File::create(filename_ref).unwrap();
                 file_handle.seek(SeekFrom::Start(range_start)).unwrap();
 
-                let mut file_range_resp = network_ref.make_request(&url_ref, range);
+                let mut file_range_resp = network_ref.get(&url_ref, range);
 
                 for _x in 0..buffer_chunks {
                     let mut vector_buffer = vec![0u8; max_buffer_size as usize];

@@ -16,7 +16,7 @@ impl Default for Network {
 }
 
 impl Network {
-    pub fn make_request(&self, url: &String, range: String) -> Response {
+    pub fn get(&self, url: &String, range: String) -> Response {
         let request = self.client.get(url).header(header::RANGE, range);
 
         request
@@ -24,7 +24,7 @@ impl Network {
             .unwrap_or_else(|err| panic!("{}: {err:?}", "Could not send request.".red().bold()))
     }
 
-    pub fn get_content_length(&self, url: &String) -> Option<u64> {
-        self.make_request(url, "".to_string()).content_length()
+    pub fn content_length(&self, url: &String) -> Option<u64> {
+        self.get(url, "".to_string()).content_length()
     }
 }
