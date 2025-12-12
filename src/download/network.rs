@@ -1,3 +1,4 @@
+use colored::Colorize;
 use reqwest::Client;
 use reqwest::Response;
 use reqwest::header;
@@ -18,7 +19,9 @@ impl Network {
     pub fn make_request(&self, url: &String, range: String) -> Response {
         let request = self.client.get(url).header(header::RANGE, range);
 
-        request.send().expect("Could not send request.")
+        request
+            .send()
+            .unwrap_or_else(|err| panic!("{}: {err:?}", "Could not send request.".red().bold()))
     }
 
     pub fn get_content_length(&self, url: &String) -> Option<u64> {
