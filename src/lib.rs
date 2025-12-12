@@ -2,6 +2,7 @@ pub mod download;
 
 use colored::Colorize;
 
+/// Parse filename from url
 pub fn filename(url: &str) -> String {
     url.rfind('/')
         .and_then(|idx| {

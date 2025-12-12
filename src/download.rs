@@ -37,18 +37,19 @@ impl Default for Download {
 
 impl Download {
     pub fn get(self) {
-        let content_length_resp: Option<u64> = self.network.content_length(&self.url);
-
-        match content_length_resp {
-            Some(content_length) => {
-                let children = Download::spawn_threads(self, content_length);
-                for child in children {
-                    let _ = child.join();
-                }
+        if let Some(content_length) = self.network.content_length(&self.url) {
+            let children = Download::spawn_threads(self, content_length);
+            for child in children {
+                let _ = child.join();
             }
-            None => println!(
-                "Content length is not present for this URL. Support for this type of hosted file will be added in the future."
-            ),
+        } else {
+            println!(
+                "{}",
+                const_str::concat!(
+                    "Content length is not present for this URL.\n",
+                    "Support for this type of hosted file will be added in the future."
+                )
+            );
         }
     }
 
