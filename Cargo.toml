@@ -4,6 +4,11 @@ version = "0.0.1"
 edition = "2024"
 authors = ["jake@mccoy.engineer", "songrun"]
 
+[profile.release]
+codegen-units = 1
+lto = "fat"
+strip = "symbols"
+
 [dependencies]
 reqwest = "0.9.3"
 indicatif = "0.12.0"
