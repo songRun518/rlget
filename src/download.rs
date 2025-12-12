@@ -21,8 +21,8 @@ pub struct Download {
 impl Default for Download {
     fn default() -> Download {
         Download {
-            url: "".to_string(),
-            filename: "".to_string(),
+            url: String::default(),
+            filename: String::default(),
             memory: 256,
             threads: 1,
             network: network::Network {
