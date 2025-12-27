@@ -46,7 +46,12 @@ fn main() -> crate::Result<()> {
 
 async fn async_main(cli: Cli) -> crate::Result<()> {
     if cli.single || !accept_ranges(&cli.url).await? {
-        single::execute(cli).await?;
+        let config = single::SingleConfig {
+            url: cli.url,
+            output_file: cli.output_file,
+            output_dir: cli.output_dir,
+        };
+        single::execute(config).await?;
     } else {
         todo!("parallel download")
     }

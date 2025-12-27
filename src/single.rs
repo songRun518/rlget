@@ -4,10 +4,16 @@ use color_eyre::eyre::eyre;
 use indicatif::{ProgressBar, ProgressStyle};
 use tokio::{fs::File, io::AsyncWriteExt};
 
-pub async fn execute(cli: crate::Cli) -> crate::Result<()> {
-    let url = &cli.url;
-    let output_file = cli.output_file;
-    let output_dir = cli.output_dir;
+pub struct SingleConfig {
+    pub url: String,
+    pub output_file: Option<PathBuf>,
+    pub output_dir: Option<PathBuf>,
+}
+
+pub async fn execute(config: SingleConfig) -> crate::Result<()> {
+    let url = &config.url;
+    let output_file = config.output_file;
+    let output_dir = config.output_dir;
 
     let filename = filename(url)?;
     let filepath = output_file.unwrap_or_else(|| {
@@ -40,7 +46,7 @@ pub async fn execute(cli: crate::Cli) -> crate::Result<()> {
     }
 
     pb.finish();
-    println!("Downloaded file was saved to {}", filepath.display());
+    println!("Saved to {}", filepath.display());
 
     Ok(())
 }
