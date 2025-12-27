@@ -28,6 +28,8 @@ pub async fn execute(url: &str) -> crate::Result<()> {
         file.write_all(&chunk).await?;
     }
 
+    pb.finish_with_message(format!("Downloaded file was saved to ./{filename}"));
+
     Ok(())
 }
 
