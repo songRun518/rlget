@@ -46,7 +46,7 @@ pub async fn execute(config: SingleConfig) -> crate::Result<()> {
     }
 
     pb.finish();
-    println!("Saved to {}", filepath.display().bright_magenta());
+    println!("Saved to {}", filepath.display().purple());
 
     Ok(())
 }

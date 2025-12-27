@@ -5,6 +5,7 @@ mod single;
 use std::path::PathBuf;
 
 use clap::Parser;
+use color_eyre::owo_colors::OwoColorize;
 
 use error::{Error, Result};
 
@@ -46,6 +47,8 @@ fn main() -> crate::Result<()> {
 
 async fn async_main(cli: Cli) -> crate::Result<()> {
     if cli.single || !accept_ranges(&cli.url).await? {
+        println!("Download in {} mode", "single-thread".purple());
+
         let config = single::SingleConfig {
             url: cli.url,
             output_file: cli.output_file,
@@ -53,6 +56,8 @@ async fn async_main(cli: Cli) -> crate::Result<()> {
         };
         single::execute(config).await?;
     } else {
+        println!("Download in {} mode", "parallel".purple());
+
         todo!("parallel download")
     }
 
