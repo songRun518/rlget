@@ -4,18 +4,21 @@ mod single;
 
 use clap::Parser;
 
-use error::Error;
-use error::Result;
+use error::{Error, Result};
 
+/// Parallel downloader
 #[derive(Debug, clap::Parser)]
 #[command(about)]
-/// Parallel downloader
 struct Cli {
     url: String,
 
-    /// Number of blocks
+    /// Amount of blocks
     #[arg(short, long)]
     nblocks: Option<usize>,
+
+    /// Force single-threaded download
+    #[arg(short, long, default_value_t = false)]
+    single: bool,
 }
 
 fn main() -> crate::Result<()> {
@@ -35,7 +38,7 @@ async fn async_main(cli: Cli) -> crate::Result<()> {
     if accept_ranges(&cli.url).await? {
         todo!("parallel download")
     } else {
-        single::execute().await?;
+        single::execute(&cli.url).await?;
     }
 
     Ok(())
