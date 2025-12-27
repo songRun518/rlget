@@ -2,6 +2,8 @@ mod error;
 mod par;
 mod single;
 
+use std::path::PathBuf;
+
 use clap::Parser;
 
 use error::{Error, Result};
@@ -12,13 +14,21 @@ use error::{Error, Result};
 struct Cli {
     url: String,
 
-    /// Amount of blocks
-    #[arg(short, long)]
-    nblocks: Option<usize>,
+    /// Output file path
+    #[arg(short = 'O', long)]
+    output_file: Option<PathBuf>,
+
+    /// Output directory path
+    #[arg(short = 'D', long)]
+    output_dir: Option<PathBuf>,
 
     /// Force single-threaded download
     #[arg(short, long, default_value_t = false)]
     single: bool,
+
+    /// Amount of blocks
+    #[arg(short, long)]
+    nblocks: Option<usize>,
 }
 
 fn main() -> crate::Result<()> {
@@ -36,7 +46,7 @@ fn main() -> crate::Result<()> {
 
 async fn async_main(cli: Cli) -> crate::Result<()> {
     if cli.single || !accept_ranges(&cli.url).await? {
-        single::execute(&cli.url).await?;
+        single::execute(cli).await?;
     } else {
         todo!("parallel download")
     }

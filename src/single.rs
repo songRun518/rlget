@@ -1,13 +1,26 @@
+use std::path::PathBuf;
+
 use color_eyre::eyre::eyre;
 use indicatif::{ProgressBar, ProgressStyle};
 use tokio::{fs::File, io::AsyncWriteExt};
 
-pub async fn execute(url: &str) -> crate::Result<()> {
+pub async fn execute(cli: crate::Cli) -> crate::Result<()> {
+    let url = &cli.url;
+    let output_file = cli.output_file;
+    let output_dir = cli.output_dir;
+
     let filename = filename(url)?;
+    let filepath = output_file.unwrap_or_else(|| {
+        output_dir
+            .map(|dir| dir.join(filename))
+            .unwrap_or_else(|| PathBuf::from(filename))
+    });
+
     let mut file = File::options()
         .create(true)
+        .truncate(true)
         .write(true)
-        .open(format!("./{filename}"))
+        .open(&filepath)
         .await?;
 
     let client = reqwest::Client::new();
@@ -17,9 +30,7 @@ pub async fn execute(url: &str) -> crate::Result<()> {
     let pb = ProgressBar::new(total_size);
     pb.set_style(
         ProgressStyle::default_bar()
-            .template(
-                "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes}",
-            )?
+            .template("{spinner:.green} [{bar:40.cyan/blue}] {bytes}/{total_bytes}")?
             .progress_chars("#>-"),
     );
 
@@ -28,7 +39,10 @@ pub async fn execute(url: &str) -> crate::Result<()> {
         file.write_all(&chunk).await?;
     }
 
-    pb.finish_with_message(format!("Downloaded file was saved to ./{filename}"));
+    pb.finish_with_message(format!(
+        "Downloaded file was saved to {}",
+        filepath.display()
+    ));
 
     Ok(())
 }
