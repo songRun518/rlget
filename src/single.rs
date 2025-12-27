@@ -1,8 +1,12 @@
 use std::path::PathBuf;
 
-use color_eyre::{eyre::Context, owo_colors::OwoColorize};
+use color_eyre::eyre::eyre;
+use compio::{fs::OpenOptions, io::AsyncWriteAtExt};
+use futures_util::AsyncReadExt;
 use indicatif::{ProgressBar, ProgressStyle};
-use tokio::{fs::File, io::AsyncWriteExt, sync::mpsc};
+use isahc::{Request, RequestExt, config::Configurable};
+
+use crate::{BUFFER_SIZE, TIMEOUT};
 
 pub async fn execute(
     url: String,
@@ -16,56 +20,54 @@ pub async fn execute(
             .unwrap_or_else(|| PathBuf::from(filename))
     });
 
-    let file = File::options()
+    let mut file = OpenOptions::new()
         .create(true)
         .truncate(true)
         .write(true)
         .open(&filepath)
         .await?;
 
-    let client = reqwest::Client::new();
-    let resp = client.get(url).send().await?;
+    let mut resp = Request::get(&url)
+        .timeout(TIMEOUT)
+        .body(())?
+        .send_async()
+        .await?;
 
-    let total_size = resp.content_length().unwrap_or(0);
-    let pb = ProgressBar::new(total_size);
+    let resp_status = resp.status();
+    if !resp_status.is_success() {
+        let reason = resp_status
+            .canonical_reason()
+            .unwrap_or("No canonical_reason");
+        return Err(eyre!("Failed to get {url}: {reason}").into());
+    }
+
+    let body = resp.body_mut();
+
+    let pb = ProgressBar::new(body.len().unwrap_or(0));
     pb.set_style(
         ProgressStyle::default_bar()
             .template("{spinner:.green} [{bar:40.cyan/blue}] {bytes}/{total_bytes}")?
             .progress_chars("#>-"),
     );
 
-    const CHANNEL_BUFFER: usize = 1000;
-    let (sx, rx) = mpsc::channel::<Vec<u8>>(CHANNEL_BUFFER);
+    let mut buf = vec![0u8; BUFFER_SIZE];
+    let mut pos = 0;
 
-    let dh = tokio::spawn(downloader(resp, sx));
-    let wh = tokio::spawn(writer(file, rx, pb));
+    loop {
+        let len = body.read(&mut buf).await?;
 
-    dh.await??;
-    wh.await??;
+        if len == 0 {
+            break;
+        }
 
-    println!("Saved to {}", filepath.display().purple());
+        buf.truncate(len);
+        let res = file.write_all_at(buf, pos).await;
+        res.0?;
+        buf = res.1;
 
-    Ok(())
-}
-
-async fn downloader(mut resp: reqwest::Response, sx: mpsc::Sender<Vec<u8>>) -> crate::Result<()> {
-    while let Some(chunk) = resp.chunk().await? {
-        sx.send(chunk.to_vec()).await.wrap_err("channel closed")?;
+        pos += len as u64;
+        pb.inc(len as u64);
     }
-    Ok(())
-}
-
-async fn writer(
-    mut file: File,
-    mut rx: mpsc::Receiver<Vec<u8>>,
-    pb: ProgressBar,
-) -> crate::Result<()> {
-    while let Some(chunk) = rx.recv().await {
-        pb.inc(chunk.len() as u64);
-        file.write_all(&chunk).await?;
-    }
-
-    pb.finish();
 
     Ok(())
 }

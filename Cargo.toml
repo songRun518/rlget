@@ -11,9 +11,11 @@ strip = "symbols"
 [dependencies]
 thiserror = "2.0.17"
 color-eyre = "0.6.5"
+
 clap = { version = "4.5.53", features = ["derive", "unicode"] }
 
-tokio = { version = "1.48.0", features = ["full"] }
-reqwest = { version = "0.12.28", features = ["stream", "blocking"] }
+compio = { version = "0.17.0", features = ["macros"] }
+isahc = "1.7.2"
+futures-util = { version = "0.3.31", features = ["io"] }
 
 indicatif = "0.18.3"
