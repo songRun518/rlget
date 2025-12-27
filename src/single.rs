@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use color_eyre::eyre::eyre;
+use color_eyre::{eyre::eyre, owo_colors::OwoColorize};
 use indicatif::{ProgressBar, ProgressStyle};
 use tokio::{fs::File, io::AsyncWriteExt};
 
@@ -46,7 +46,7 @@ pub async fn execute(config: SingleConfig) -> crate::Result<()> {
     }
 
     pb.finish();
-    println!("Saved to {}", filepath.display());
+    println!("Saved to {}", filepath.display().bright_magenta());
 
     Ok(())
 }
