@@ -1,8 +1,10 @@
 [package]
 name = "rlget"
-version = "0.0.1"
+version = "0.1.0"
 edition = "2024"
-authors = ["jake@mccoy.engineer", "songrun"]
+authors = ["songrun"]
+description = "Parallel downloader"
+license = "MIT"
 
 [profile.release]
 codegen-units = 1
@@ -13,9 +15,3 @@ strip = "symbols"
 reqwest = "0.9.3"
 indicatif = "0.12.0"
 clap = { version = "4.5.53", features = ["derive"] }
-colored = "3.0.0"
-const-str = "0.7.0"
-
-[[test]]
-name = "parse_filename"
-path = "tests/parse_filename.rs"
