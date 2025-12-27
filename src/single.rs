@@ -39,10 +39,8 @@ pub async fn execute(cli: crate::Cli) -> crate::Result<()> {
         file.write_all(&chunk).await?;
     }
 
-    pb.finish_with_message(format!(
-        "Downloaded file was saved to {}",
-        filepath.display()
-    ));
+    pb.finish();
+    println!("Downloaded file was saved to {}", filepath.display());
 
     Ok(())
 }
