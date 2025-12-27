@@ -1,6 +1,7 @@
 mod error;
 mod par;
 mod single;
+mod utils;
 
 use std::path::PathBuf;
 
@@ -37,37 +38,35 @@ fn main() -> crate::Result<()> {
 
     color_eyre::install()?;
 
-    tokio::runtime::Builder::new_multi_thread()
+    let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
-        .build()?
-        .block_on(async_main(cli))?;
+        .build()?;
 
-    Ok(())
-}
-
-async fn async_main(cli: Cli) -> crate::Result<()> {
-    if cli.single || !accept_ranges(&cli.url).await? {
+    if cli.single || !accept_ranges(&cli.url)? {
         println!("Download in {} mode", "single-thread".purple());
 
-        let config = single::SingleConfig {
-            url: cli.url,
-            output_file: cli.output_file,
-            output_dir: cli.output_dir,
-        };
-        single::execute(config).await?;
+        rt.block_on(single::execute(cli.url, cli.output_file, cli.output_dir))?;
     } else {
         println!("Download in {} mode", "parallel".purple());
 
-        todo!("parallel download")
+        todo!();
+
+        // let config = par::Config {
+        //     url: cli.url,
+        //     output_file: cli.output_file,
+        //     output_dir: cli.output_dir,
+        //     nblocks: cli.nblocks,
+        // };
+        // rt.block_on(par::execute(config))?;
     }
 
     Ok(())
 }
 
-async fn accept_ranges(url: &str) -> crate::Result<bool> {
-    let client = reqwest::Client::new();
+fn accept_ranges(url: &str) -> crate::Result<bool> {
+    let client = reqwest::blocking::Client::new();
 
-    let resp = client.head(url).send().await?;
+    let resp = client.head(url).send()?;
 
     if let Some(val) = resp.headers().get(reqwest::header::ACCEPT_RANGES)
         && let Ok(val) = val.to_str()
@@ -77,8 +76,7 @@ async fn accept_ranges(url: &str) -> crate::Result<bool> {
         let resp = client
             .get(url)
             .header(reqwest::header::RANGE, "bytes=0-0")
-            .send()
-            .await?;
+            .send()?;
 
         Ok(resp.status() == reqwest::StatusCode::PARTIAL_CONTENT)
     }

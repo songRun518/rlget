@@ -9,6 +9,9 @@ pub enum Error {
     #[error("Error of indicatif: {0}")]
     IndicatifTemplate(#[from] indicatif::style::TemplateError),
 
+    #[error("Error of tokio: {0}")]
+    TokioTaskJoin(#[from] tokio::task::JoinError),
+
     #[error("Error: {0}")]
     Any(#[from] color_eyre::Report),
 }
