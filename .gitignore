@@ -1,3 +1,2 @@
-*.iso
-Cargo.lock
 target
+Cargo.lock
