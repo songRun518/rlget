@@ -35,10 +35,10 @@ fn main() -> crate::Result<()> {
 }
 
 async fn async_main(cli: Cli) -> crate::Result<()> {
-    if accept_ranges(&cli.url).await? {
-        todo!("parallel download")
-    } else {
+    if cli.single || !accept_ranges(&cli.url).await? {
         single::execute(&cli.url).await?;
+    } else {
+        todo!("parallel download")
     }
 
     Ok(())
